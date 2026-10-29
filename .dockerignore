@@ -1,0 +1,17 @@
+.env
+.streamlit/secrets.toml
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.git/
+logs/
+tests/
+*.pyc
+.cache/
+**/.cache/
+# Local database: do not bake local ChromaDB into the image
+chroma_db/
+
+# Git metadata
+.git/
