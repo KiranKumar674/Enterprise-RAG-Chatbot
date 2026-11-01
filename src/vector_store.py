@@ -1,6 +1,6 @@
 
 from pathlib import Path
-
+import os
 import chromadb
 from sentence_transformers import SentenceTransformer
 
@@ -12,6 +12,9 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DOCUMENTS_DIR = PROJECT_ROOT / "data" / "documents"
 DB_DIR = PROJECT_ROOT / "chroma_db"
 
+# DB_DIR = Path(
+#     os.getenv("CHROMA_DB_DIR", str(PROJECT_ROOT / "chroma_db"))
+# # )
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 client = chromadb.PersistentClient(path=str(DB_DIR))

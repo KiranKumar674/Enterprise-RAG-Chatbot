@@ -4,7 +4,8 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/app/.cache/huggingface
+    HF_HOME=/app/.cache/huggingface \
+    CHROMA_DB_DIR=/app/chroma_db
 
 WORKDIR /app
 
@@ -13,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
+
 RUN pip install --upgrade pip && \
     pip install --index-url https://download.pytorch.org/whl/cpu torch==2.8.0+cpu && \
     pip install -r requirements.txt
@@ -20,6 +22,8 @@ RUN pip install --upgrade pip && \
 COPY src/ ./src/
 COPY data/ ./data/
 
+# Build the sample policy vector database into the image.
+RUN cd src && python vector_store.py
 
 EXPOSE 8080
 

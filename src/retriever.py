@@ -1,13 +1,36 @@
 
+import os
+from functools import lru_cache
 from pathlib import Path
 
-import chromadb  # type: ignore
-from sentence_transformers import SentenceTransformer  # type: ignore
+import chromadb
+from sentence_transformers import SentenceTransformer
 
 try:
     from .access_control import get_allowed_documents
 except ImportError:
     from access_control import get_allowed_documents
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# Use Azure-mounted storage when configured; otherwise use local storage.
+DB_DIR = Path(
+    os.getenv("CHROMA_DB_DIR", str(PROJECT_ROOT / "chroma_db"))
+)
+
+
+@lru_cache(maxsize=1)
+def get_embedding_model():
+    """Load the embedding model only once per application process."""
+    return SentenceTransformer("all-MiniLM-L6-v2")
+
+
+@lru_cache(maxsize=1)
+def get_chroma_collection():
+    """Create and reuse the persistent ChromaDB collection."""
+    client = chromadb.PersistentClient(path=str(DB_DIR))
+    return client.get_collection(name="company_policies")
 
 
 def retrieve_documents(question: str, role: str, n_results: int = 2):
@@ -18,34 +41,27 @@ def retrieve_documents(question: str, role: str, n_results: int = 2):
     if not allowed_documents:
         return []
 
-    project_root = Path(__file__).resolve().parent.parent
-    database_path = project_root / "chroma_db"
-
-    model = SentenceTransformer("all-MiniLM-L6-v2")
-
-    client = chromadb.PersistentClient(path=str(database_path))
-    collection = client.get_collection(name="company_policies")
+    collection = get_chroma_collection()
+    model = get_embedding_model()
 
     query_embedding = model.encode(question).tolist()
 
-    
+    result_count = min(n_results, collection.count())
+
+    if result_count == 0:
+        return []
+
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=n_results,
+        n_results=result_count,
         where={"source": {"$in": allowed_documents}},
         include=["documents", "metadatas"],
     )
-    print("ROLE:", role)
-    print("ALLOWED DOCUMENTS:", allowed_documents)
-    print("COLLECTION:", collection.name)
-    print("COUNT BEFORE FILTER:", collection.count())
-
-    print("RETURNED METADATA:", results.get("metadatas"))
 
     documents = results.get("documents", [[]])[0]
     metadatas = results.get("metadatas", [[]])[0]
 
-    # Defensive check: never return a chunk from an unauthorized source.
+    # Defensive check: never return an unauthorized document.
     allowed_set = set(allowed_documents)
 
     permitted_documents = [
@@ -55,7 +71,6 @@ def retrieve_documents(question: str, role: str, n_results: int = 2):
     ]
 
     return permitted_documents
-
 
 
 def main():

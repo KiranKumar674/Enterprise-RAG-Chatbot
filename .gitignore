@@ -1,19 +1,22 @@
-.env
-__pycache__/
-chroma_db/
-.pytest_cache/
-# Secrets
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
 
-# Python environments and caches
+# Python environments
 .venv/
 venv/
 __pycache__/
-.pytest_cache/
 *.py[cod]
+.pytest_cache/
 
-# Local database and logs
+# ChromaDB
 chroma_db/
+
+# Logs and generated results
 logs/
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
