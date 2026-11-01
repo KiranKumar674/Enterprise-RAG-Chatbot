@@ -21,6 +21,7 @@ RUN pip install --upgrade pip && \
 
 COPY src/ ./src/
 COPY data/ ./data/
+COPY models/ ./models/
 
 # Build the sample policy vector database into the image.
 RUN cd src && python vector_store.py

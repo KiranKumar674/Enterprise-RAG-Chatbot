@@ -22,8 +22,19 @@ DB_DIR = Path(
 
 @lru_cache(maxsize=1)
 def get_embedding_model():
-    """Load the embedding model only once per application process."""
-    return SentenceTransformer("all-MiniLM-L6-v2")
+    """Load the local embedding model only once per application process."""
+
+    model_path = PROJECT_ROOT / "models" / "all-MiniLM-L6-v2"
+
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"Embedding model not found: {model_path}"
+        )
+
+    return SentenceTransformer(
+        str(model_path),
+        local_files_only=True
+    )
 
 
 @lru_cache(maxsize=1)

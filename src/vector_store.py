@@ -10,14 +10,32 @@ from text_chunker import split_text
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DOCUMENTS_DIR = PROJECT_ROOT / "data" / "documents"
-DB_DIR = PROJECT_ROOT / "chroma_db"
 
-# DB_DIR = Path(
-#     os.getenv("CHROMA_DB_DIR", str(PROJECT_ROOT / "chroma_db"))
-# # )
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+MODEL_DIR = PROJECT_ROOT / "models" / "all-MiniLM-L6-v2"
+
+DB_DIR = Path(
+    os.getenv("CHROMA_DB_DIR", str(PROJECT_ROOT / "chroma_db"))
+)
+
+
+def get_embedding_model():
+    """Load the local embedding model."""
+
+    if not MODEL_DIR.exists():
+        raise FileNotFoundError(
+            f"Embedding model not found: {MODEL_DIR}"
+        )
+
+    return SentenceTransformer(
+        str(MODEL_DIR),
+        local_files_only=True
+    )
+
+
+embedding_model = get_embedding_model()
 
 client = chromadb.PersistentClient(path=str(DB_DIR))
+
 collection = client.get_or_create_collection(
     name="company_policies"
 )
