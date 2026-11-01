@@ -1,97 +1,101 @@
 # Enterprise RAG Chatbot for Private Company Data with Role-Based Access Control (RBAC)
 
-## 1. Project Overview
+An AI-powered question-answering application that retrieves information from sample company policy documents and generates context-aware answers. The project demonstrates Retrieval-Augmented Generation (RAG), role-based document retrieval, query guardrails, and basic monitoring and evaluation.
 
-The **Enterprise RAG Chatbot** is an AI-powered question-answering system designed to retrieve and generate answers from internal company documents.
+> **Project status:** This is a learning/demo implementation using sample policy documents. Role selection in the UI is for demonstration and is not production authentication. Cross-role denial must be tested explicitly before claiming that departmental isolation is fully validated.
 
-It uses Retrieval-Augmented Generation (RAG) to provide context-aware responses while implementing Role-Based Access Control (RBAC) to restrict document access based on user roles.
+## Features
 
-The project demonstrates how organizations can build an internal knowledge assistant that helps employees retrieve relevant information from company policies.
+- **Retrieval-Augmented Generation:** retrieves relevant document chunks before generating an answer.
+- **Role-based document filtering:** applies document-access rules for General, HR, and Finance demo roles.
+- **Semantic retrieval:** uses Sentence Transformers embeddings and ChromaDB.
+- **LLM responses:** uses a Groq-hosted language model.
+- **Query guardrails:** handles selected malicious and out-of-scope prompts.
+- **Monitoring and evaluation modules:** includes project components for tracking and evaluating chatbot behavior.
+- **Streamlit interface:** provides a simple chat interface for testing.
 
-## 2. Key Features
+## Technology Stack
 
-- **Retrieval-Augmented Generation (RAG):** Retrieves relevant information from company documents before generating answers.
-- **Role-Based Access Control (RBAC):** Restricts document retrieval based on the selected user role.
-- **Document Processing:** Loads and splits company policy documents into smaller chunks.
-- **Vector Database:** Uses ChromaDB to store document embeddings and retrieve relevant content.
-- **Semantic Search:** Uses Sentence Transformers for document embeddings.
-- **LLM Integration:** Uses Groq-hosted language models to generate responses.
-- **Guardrails:** Includes checks to handle restricted or out-of-scope queries.
-- **Monitoring and Evaluation:** Includes modules for tracking chatbot activity and evaluating responses.
-
-## 3. Technology Stack
-
-| Category | Technology |
+| Area | Technology |
 |---|---|
-| Programming Language | Python |
-| Frontend | Streamlit |
-| RAG Framework | Custom Python RAG Pipeline |
-| Embedding Model | all-MiniLM-L6-v2 |
-| Vector Database | ChromaDB |
-| LLM Provider | Groq |
+| Language | Python 3.12 |
+| UI | Streamlit |
+| Embeddings | `all-MiniLM-L6-v2` |
+| Vector database | ChromaDB |
+| LLM provider | Groq |
 | Containerization | Docker |
-| Testing | Pytest |
+| Tests | Pytest |
 
-## 4. Project Status
-
-This project currently uses sample company policy documents to demonstrate RAG and role-based document retrieval. Production authentication, deployment, and enterprise-grade security are future improvements.
-
-## 5. System Architecture
-
-The chatbot follows a Retrieval-Augmented Generation workflow.
+## Architecture
 
 ```mermaid
 flowchart TD
     A[User] --> B[Streamlit Interface]
-    B --> C[Role Selection]
+    B --> C[Demo Role Selection]
     C --> D[Access Control]
     D --> E[Guardrails]
     E --> F[Retriever]
-    F --> G[ChromaDB Vector Database]
+    F --> G[(ChromaDB)]
     G --> H[Relevant Document Chunks]
     H --> I[RAG Pipeline]
-    I --> J[Groq LLM]
-    J --> K[Generated Response]
+    I --> J[Groq-hosted LLM]
+    J --> K[Generated Answer]
     K --> B
-    B --> A
 ```
 
-### Workflow
+## Demo document access rules
 
-1. The user enters a question through the Streamlit interface.
-2. The user selects a role for the demonstration.
-3. Access control determines which documents the selected role can retrieve.
-4. Guardrails check the incoming query.
-5. The retriever searches the permitted documents in ChromaDB.
-6. Relevant document chunks are passed to the RAG pipeline.
-7. The Groq-hosted LLM generates an answer using the retrieved context.
-8. The response is displayed to the user.
-
-## 6. Document Access Rules
-
-| User Role | Accessible Documents |
+| Demo role | Documents configured for retrieval |
 |---|---|
-| General | Company Policy |
-| HR | Company Policy, HR Policy |
-| Finance | Company Policy, Finance Policy |
+| General Employee | Company Policy |
+| HR Employee | Company Policy and HR Policy |
+| Finance Employee | Company Policy and Finance Policy |
 
-*Note: Role selection is currently a demonstration mechanism, not production authentication.*
+The role selector is a demo mechanism. It does not authenticate a real employee or prove production-grade authorization. Cross-role access-denial tests should be run and documented separately.
 
-## 7. Project Structure
+## Screenshots
+
+The screenshots below show the chatbot's observed responses during manual testing. They are examples from the sample policy dataset, not evidence of production security.
+
+### General Employee
+
+**Policy questions and normal responses**
+
+![General role policy responses](assets/screenshots/general-policy.png)
+
+**Guardrail and unsupported-information responses**
+
+![General role guardrail responses](assets/screenshots/general-guardrails.png)
+
+### HR Employee
+
+**HR policy retrieval**
+
+![HR role policy responses](assets/screenshots/hr-policy.png)
+
+**Guardrail and unsupported-information responses**
+
+![HR role guardrail responses](assets/screenshots/hr-guardrails.png)
+
+### Finance Employee
+
+**Finance policy retrieval**
+
+![Finance role policy responses](assets/screenshots/finance-policy.png)
+
+**Guardrail and unsupported-information responses**
+
+![Finance role guardrail responses](assets/screenshots/finance-guardrails.png)
+
+## Project Structure
 
 ```text
 Enterprise-RAG-Chatbot/
-│
 ├── data/
 │   └── documents/
 │       ├── company_policy.txt
 │       ├── finance_policy.txt
 │       └── hr_policy.txt
-│
-├── logs/
-│   ├── evaluation_results.json
-│   └── monitoring.jsonl
-│
 ├── src/
 │   ├── access_control.py
 │   ├── app.py
@@ -104,7 +108,6 @@ Enterprise-RAG-Chatbot/
 │   ├── retriever.py
 │   ├── text_chunker.py
 │   └── vector_store.py
-│
 ├── tests/
 ├── .streamlit/
 ├── .dockerignore
@@ -114,38 +117,38 @@ Enterprise-RAG-Chatbot/
 └── README.md
 ```
 
-*Note: The `chroma_db/`, `.env`, and generated log files are kept out of Git using `.gitignore`.*
+Generated files and local runtime data such as `.env`, `chroma_db/`, and `logs/` are excluded from version control by the project's ignore rules.
 
-## 8. Installation and Setup
+## Setup and Run Locally
 
-### Prerequisites
-
-- Python 3.12
-- Git
-- Docker (optional, for containerized execution)
-- Groq API key
-
-### Step 1: Clone the Repository
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Enterprise-RAG-Chatbot.git
+git clone https://github.com/KiranKumar674/Enterprise-RAG-Chatbot.git
 cd Enterprise-RAG-Chatbot
 ```
 
-### Step 2: Create a Virtual Environment
+### 2. Create and activate a virtual environment
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-### Step 3: Install Dependencies
+On Windows PowerShell:
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+### 3. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4: Configure Environment Variables
+### 4. Configure the Groq API key
 
 Create a `.env` file in the project root:
 
@@ -153,31 +156,31 @@ Create a `.env` file in the project root:
 GROQ_API_KEY=your_groq_api_key
 ```
 
-Replace the placeholder with your own Groq API key. Never commit your `.env` file or share your API key.
+Use your own key locally. **Never commit `.env`, paste API keys into screenshots, or publish secrets.**
 
-### Step 5: Build the Vector Database
+### 5. Build the vector database
 
 ```bash
 python src/vector_store.py
 ```
 
-### Step 6: Run the Application
+### 6. Start the Streamlit application
 
 ```bash
 streamlit run src/app.py
 ```
 
-Open the local URL displayed in the terminal to access the chatbot.
+Open the local URL printed by Streamlit (typically `http://localhost:8501`).
 
-## 9. Docker Setup
+## Run with Docker
 
-### Build the Docker Image
+Build the image:
 
 ```bash
 docker build -t enterprise-rag-chatbot .
 ```
 
-### Run the Container
+Run the container:
 
 ```bash
 docker run -d \
@@ -187,76 +190,59 @@ docker run -d \
   enterprise-rag-chatbot
 ```
 
-Open:
+Open `http://localhost:8080`.
 
-```text
-http://localhost:8080
-```
-
-### Stop the Container
+Stop and remove the container:
 
 ```bash
 docker stop rag-demo
-```
-
-### Remove the Container
-
-```bash
 docker rm rag-demo
 ```
 
-## 10. Testing and Validation
+## Testing
 
-The project includes automated tests using Pytest.
-
-### Test Results
-
-- **Total tests passed:** 27
-- **Failed tests:** 0
-- **Testing framework:** Pytest
-
-Run the test suite using:
+Run the automated test suite:
 
 ```bash
 python -m pytest -v
 ```
 
-The tests cover:
+The project test run recorded **27 passing tests**. Re-run the command after changes to confirm the current result.
 
-- Role-based document access
-- Guardrail functionality
-- Document retrieval
-- RAG evaluation
-- Monitoring functionality
+Manual testing shown in the screenshots covered:
+- Relevant company-policy questions for General, HR, and Finance demo roles.
+- Selected prompt-injection and malicious requests.
+- Out-of-scope questions.
+- Questions for which the sample documents did not contain sufficient information.
 
-### Manual Testing
+### RBAC validation still required
 
-The chatbot was manually tested with different roles:
+To verify document isolation, test the following and record the actual results:
 
-| Role | Test Scenario |
+| Selected role | Cross-department question |
 |---|---|
-| Finance | Retrieve reimbursement policy information |
-| HR | Retrieve leave policy information |
-| General | Retrieve IT support information |
+| General Employee | What is the reimbursement review period? |
+| HR Employee | What is the reimbursement review period? |
+| Finance Employee | What is the leave policy? |
 
-## 11. Current Limitations
+A secure result should not reveal content from a department's restricted document. Do not describe RBAC as fully validated until these negative tests pass.
 
-- Uses sample company policy documents rather than real enterprise data.
-- Role selection is demonstration-only and does not provide production authentication.
-- Guardrails use heuristic checks and require further security improvements.
-- The project has not yet been deployed to a production cloud environment.
-- Monitoring and evaluation require further development for production-scale usage.
+## Current Limitations
 
-## 12. Future Improvements
+- Uses sample company policy documents rather than a real enterprise knowledge base.
+- Role selection is a demonstration control, not production authentication.
+- Guardrails are heuristic and are not a complete security boundary.
+- Cross-role denial requires explicit negative testing.
+- Production deployment and enterprise-grade security hardening are not yet implemented.
 
-- Implement secure user authentication and authorization.
-- Integrate enterprise document sources.
-- Improve PII detection and sensitive-data protection.
-- Strengthen guardrails against prompt injection and unauthorized requests.
-- Deploy the application to Microsoft Azure.
-- Add automated evaluation and monitoring during deployment.
-- Introduce token usage and cost tracking with alerts.
-- Improve scalability and production reliability.
+## Future Improvements
 
+- Add secure authentication and server-side authorization.
+- Expand document ingestion and support enterprise document sources.
+- Improve prompt-injection and sensitive-data defenses.
+- Add stronger RBAC isolation tests.
+- Deploy to Microsoft Azure.
+- Expand evaluation, monitoring, token tracking, and cost alerts.
+- Improve scalability, observability, and production reliability.
 
 
